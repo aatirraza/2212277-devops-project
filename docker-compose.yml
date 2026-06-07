@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:15
+    container_name: devops_db_local
+    environment:
+      POSTGRES_USER: devops
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devops -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: devops_web_local
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=devops
+      - DB_PASSWORD=secret123
+      - DB_NAME=appdb
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data_local:
