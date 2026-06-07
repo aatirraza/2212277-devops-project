@@ -1,0 +1,36 @@
+name: Continuous Deployment Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-to-cloud:
+    name: Remote SSH Deployment to AWS EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Repository Source Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Stack via Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            if [ ! -d "2212277-devops-project" ]; then
+              git clone https://github.com/aatirraza/2212277-devops-project.git
+              cd 2212277-devops-project
+            else
+              cd 2212277-devops-project
+              git pull origin main
+            fi
+
+            export DB_USER="devops"
+            export DB_PASSWORD="secure_prod_password_123"
+            export DB_NAME="appdb"
+
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d --build
