@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel, Field
 import models
-from database import get_db
+from database import get_db, engine
+
+# This line auto-creates the tables in the database!
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="DevOps Microservice Capstone")
 
@@ -43,3 +46,4 @@ def read_student_by_id(reg_no: str, db: Session = Depends(get_db)):
     if not target:
         raise HTTPException(status_code=404, detail=f"Student profile '{reg_no}' not found.")
     return target
+EOF
