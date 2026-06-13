@@ -46,4 +46,3 @@ def read_student_by_id(reg_no: str, db: Session = Depends(get_db)):
     if not target:
         raise HTTPException(status_code=404, detail=f"Student profile '{reg_no}' not found.")
     return target
-EOF
